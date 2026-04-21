@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ZAKAR — Redesign</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; font-family: -apple-system, system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  @keyframes scan {
+    0% { transform: translateY(-100%); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(100%); opacity: 0; }
+  }
+</style>
+
+<!-- tweaks defaults -->
+<script>
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "goldIntensity": 1,
+    "grainOpacity": 0.6,
+    "background": "ink"
+  }/*EDITMODE-END*/;
+  window.__TWEAKS = { ...TWEAK_DEFAULTS };
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- fonts: luxury serif + refined sans + mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="components/theme.jsx"></script>
+<script type="text/babel" src="components/onboarding-v2.jsx"></script>
+<script type="text/babel" src="components/home-v2.jsx"></script>
+<script type="text/babel" src="components/app-screens.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+// Wrap a screen component in an iPhone frame with transparent background
+function InPhone({ children, dark = true }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      <IOSDevice width={390} height={844} dark={dark}>
+        <div style={{
+          position: 'absolute', inset: 0, background: dark ? '#000' : '#fff',
+        }}>
+          {children}
+        </div>
+      </IOSDevice>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// Tweaks panel
+// ─────────────────────────────────────────────────────────
+function TweaksPanel({ open, onClose, tweaks, setTweaks }) {
+  if (!open) return null;
+  return (
+    <div style={{
+      position: 'fixed', bottom: 24, right: 24, zIndex: 100,
+      width: 280, background: '#141013', color: '#F6F2EA',
+      border: '1px solid #D4B671', fontFamily: 'Inter, system-ui, sans-serif',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+    }}>
+      <div style={{
+        padding: '14px 18px', borderBottom: '1px solid rgba(212,182,113,0.3)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      }}>
+        <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#D4B671', fontWeight: 600 }}>TWEAKS</div>
+        <div onClick={onClose} style={{ cursor: 'pointer', fontSize: 18, color: 'rgba(246,242,234,0.5)' }}>×</div>
+      </div>
+
+      <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* gold intensity */}
+        <div>
+          <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#D4B671', marginBottom: 6 }}>Gold Intensity</div>
+          <input type="range" min="0.3" max="1.5" step="0.1" value={tweaks.goldIntensity}
+            onChange={(e) => setTweaks({ ...tweaks, goldIntensity: parseFloat(e.target.value) })}
+            style={{ width: '100%', accentColor: '#D4B671' }} />
+          <div style={{ fontSize: 10, color: 'rgba(246,242,234,0.5)', marginTop: 2 }}>{tweaks.goldIntensity.toFixed(1)}×</div>
+        </div>
+
+        {/* grain */}
+        <div>
+          <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#D4B671', marginBottom: 6 }}>Grain</div>
+          <input type="range" min="0" max="1" step="0.1" value={tweaks.grainOpacity}
+            onChange={(e) => setTweaks({ ...tweaks, grainOpacity: parseFloat(e.target.value) })}
+            style={{ width: '100%', accentColor: '#D4B671' }} />
+          <div style={{ fontSize: 10, color: 'rgba(246,242,234,0.5)', marginTop: 2 }}>{(tweaks.grainOpacity * 100).toFixed(0)}%</div>
+        </div>
+
+        {/* background */}
+        <div>
+          <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#D4B671', marginBottom: 6 }}>Background</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4 }}>
+            {['black', 'onyx', 'ink'].map((b) => (
+              <button key={b} onClick={() => setTweaks({ ...tweaks, background: b })}
+                style={{
+                  padding: '8px 6px', fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase',
+                  background: tweaks.background === b ? '#D4B671' : 'transparent',
+                  color: tweaks.background === b ? '#0E0E12' : '#F6F2EA',
+                  border: '1px solid rgba(212,182,113,0.4)', cursor: 'pointer',
+                  fontFamily: 'inherit', fontWeight: 600,
+                }}>{b}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
+  const [tweaksOpen, setTweaksOpen] = useState(false);
+
+  // edit-mode bridge
+  useEffect(() => {
+    const handler = (e) => {
+      if (!e.data) return;
+      if (e.data.type === '__activate_edit_mode') setTweaksOpen(true);
+      if (e.data.type === '__deactivate_edit_mode') setTweaksOpen(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  useEffect(() => {
+    window.__TWEAKS = tweaks;
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: tweaks }, '*');
+    // CSS var tints
+    document.documentElement.style.setProperty('--gold-intensity', tweaks.goldIntensity);
+  }, [tweaks]);
+
+  return (
+    <>
+      <DesignCanvas>
+        {/* ─── ONBOARDING — Sanctum ─── */}
+        <DCSection id="ob" title="Onboarding" subtitle="Sanctum · bold cinematic — 5 steps">
+          {[0,1,2,3,4].map(p => (
+            <DCArtboard key={`ob-${p}`} id={`ob-${p}`} label={`Step ${p+1}`} width={390} height={844}>
+              <InPhone dark><OnboardingV2 pageOverride={p} /></InPhone>
+            </DCArtboard>
+          ))}
+          <DCArtboard id="ob-live" label="Live (interactive)" width={390} height={844}>
+            <InPhone dark><OnboardingV2 /></InPhone>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── HOME ─── */}
+        <DCSection id="home" title="Home" subtitle="Sanctum · main screen">
+          <DCArtboard id="h2" label="Home" width={390} height={844}>
+            <InPhone dark><HomeV2 /></InPhone>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── APP SCREENS ─── */}
+        <DCSection id="app" title="App Screens" subtitle="Core flows — photos, similar review, album">
+          <DCArtboard id="photos" label="All Photos" width={390} height={844}>
+            <InPhone dark><PhotosView /></InPhone>
+          </DCArtboard>
+          <DCArtboard id="similar" label="Similar Review" width={390} height={844}>
+            <InPhone dark><SimilarReview /></InPhone>
+          </DCArtboard>
+          <DCArtboard id="album" label="Album Detail" width={390} height={844}>
+            <InPhone dark><AlbumDetail /></InPhone>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── NOTES ─── */}
+        <DCSection id="notes" title="Design notes" subtitle="System summary">
+          <DCArtboard id="palette" label="Palette & type" width={680} height={520}>
+            <Palette />
+          </DCArtboard>
+        </DCSection>
+
+        {/* floating post-it */}
+        <DCPostIt top={40} right={30} rotate={3} width={200}>
+          ZAKAR — Sanctum
+          <br/>· 블랙/골드 시네마틱
+          <br/>· 온보딩 + 홈 + 앱 화면
+          <br/>Tweaks로 골드 강도 조절 ↗
+        </DCPostIt>
+      </DesignCanvas>
+
+      <TweaksPanel open={tweaksOpen} onClose={() => setTweaksOpen(false)} tweaks={tweaks} setTweaks={setTweaks} />
+    </>
+  );
+}
+
+function Palette() {
+  const swatches = [
+    { name: 'Obsidian', hex: '#07070A', sub: 'base bg' },
+    { name: 'Onyx', hex: '#0E0E12', sub: 'surface' },
+    { name: 'Graphite', hex: '#18181F', sub: 'card' },
+    { name: 'Gold', hex: '#D4B671', sub: 'primary' },
+    { name: 'Gold Light', hex: '#EAD8A0', sub: 'accent' },
+    { name: 'Gold Deep', hex: '#A78848', sub: 'shadow' },
+    { name: 'White', hex: '#F6F2EA', sub: 'text' },
+    { name: 'Ember', hex: '#C96442', sub: 'rare accent' },
+  ];
+  return (
+    <div style={{
+      width: '100%', height: '100%', background: '#07070A', color: '#F6F2EA',
+      padding: 32, fontFamily: 'Inter, sans-serif',
+    }}>
+      <div style={{ fontFamily: 'JetBrains Mono', fontSize: 10, letterSpacing: 3, color: '#D4B671', marginBottom: 8 }}>— PALETTE —</div>
+      <div style={{ fontFamily: 'Fraunces', fontSize: 32, fontWeight: 300, letterSpacing: -1, marginBottom: 24 }}>
+        Black & <span style={{ fontStyle: 'italic', color: '#D4B671' }}>Gold</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 32 }}>
+        {swatches.map(s => (
+          <div key={s.hex}>
+            <div style={{
+              aspectRatio: '1', background: s.hex,
+              border: '1px solid rgba(212,182,113,0.25)', marginBottom: 8,
+            }}/>
+            <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 2 }}>{s.name}</div>
+            <div style={{ fontFamily: 'JetBrains Mono', fontSize: 9, color: '#D4B671', letterSpacing: 1 }}>{s.hex}</div>
+            <div style={{ fontFamily: 'Cormorant Garamond', fontStyle: 'italic', fontSize: 11, color: 'rgba(246,242,234,0.5)' }}>{s.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ fontFamily: 'JetBrains Mono', fontSize: 10, letterSpacing: 3, color: '#D4B671', marginBottom: 12 }}>— TYPE —</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ fontFamily: 'Fraunces', fontSize: 40, fontWeight: 300, lineHeight: 1 }}>Fraunces <span style={{ fontStyle: 'italic', color: '#D4B671' }}>Display</span></div>
+        <div style={{ fontFamily: 'Cormorant Garamond', fontSize: 22, fontStyle: 'italic', color: '#EAD8A0' }}>Cormorant Garamond — editorial</div>
+        <div style={{ fontFamily: 'Inter', fontSize: 14, letterSpacing: 2, textTransform: 'uppercase', color: '#F6F2EA' }}>INTER · UI TEXT · 500</div>
+        <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 1.5, color: 'rgba(246,242,234,0.6)' }}>JETBRAINS MONO · META · CAPTIONS</div>
+      </div>
+    </div>
+  );
+}
+
+function SystemNotes() {
+  return (
+    <div style={{
+      width: '100%', height: '100%', background: '#07070A', color: '#F6F2EA',
+      padding: 32, fontFamily: 'Inter, sans-serif', fontWeight: 300,
+    }}>
+      <div style={{ fontFamily: 'JetBrains Mono', fontSize: 10, letterSpacing: 3, color: '#D4B671', marginBottom: 8 }}>— VISUAL SYSTEM —</div>
+      <div style={{ fontFamily: 'Fraunces', fontSize: 28, fontWeight: 300, letterSpacing: -1, marginBottom: 28, lineHeight: 1.1 }}>
+        두 가지 <span style={{ fontStyle: 'italic', color: '#D4B671' }}>방향성</span>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        {[
+          {
+            name: 'Ⅰ · Obsidian',
+            subt: 'quiet editorial',
+            desc: '조용한 럭셔리. 미술관 도록처럼 여백이 풍부하고 글자 간격이 넓습니다. 골드 헤어라인, 로마 숫자, 이탤릭 세리프 번호로 각 섹션을 챕터처럼 구성. 편집 디자인의 절제된 품격.',
+            tags: ['letter-spaced', 'hairlines', 'roman numerals', 'plate no.'],
+          },
+          {
+            name: 'Ⅱ · Sanctum',
+            subt: 'bold cinematic',
+            desc: '영화 타이틀 시퀀스처럼 과감합니다. 거대한 히브리어, 100px이 넘는 이탤릭 세리프, 히어로 이미지가 화면을 지배. 골드 그라디언트 CTA, 스포트라이트 조명 효과. 교회의 영광스러움을 담습니다.',
+            tags: ['hero imagery', 'xxl serif', 'gradient CTA', 'spotlight'],
+          },
+        ].map((d) => (
+          <div key={d.name} style={{
+            border: '1px solid rgba(212,182,113,0.3)', padding: 20,
+          }}>
+            <div style={{ fontFamily: 'Fraunces', fontSize: 22, marginBottom: 2 }}>{d.name}</div>
+            <div style={{ fontFamily: 'Cormorant Garamond', fontStyle: 'italic', fontSize: 14, color: '#D4B671', marginBottom: 14 }}>{d.subt}</div>
+            <div style={{ fontSize: 12, lineHeight: 1.6, color: 'rgba(246,242,234,0.78)', marginBottom: 16 }}>{d.desc}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {d.tags.map(t => (
+                <div key={t} style={{
+                  fontFamily: 'JetBrains Mono', fontSize: 9, letterSpacing: 1,
+                  padding: '3px 8px', border: '1px solid rgba(212,182,113,0.25)',
+                  color: '#D4B671', textTransform: 'uppercase',
+                }}>{t}</div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        marginTop: 28, paddingTop: 20, borderTop: '1px solid rgba(246,242,234,0.1)',
+        fontFamily: 'Cormorant Garamond', fontStyle: 'italic', fontSize: 16, color: '#EAD8A0', textAlign: 'center',
+      }}>
+        "모든 은혜를 기억합니다" — 자카르 · זָכַר · to remember
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>
