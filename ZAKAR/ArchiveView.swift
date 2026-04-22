@@ -156,9 +156,10 @@ struct ArchiveView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text("아카이브")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
+                    Text("ARCHIVE")
+                        .font(.sanctumMono(12))
+                        .tracking(3)
+                        .foregroundColor(AppTheme.warmWhite)
                 }
             }
         }
@@ -178,17 +179,18 @@ struct ArchiveView: View {
                         Image(systemName: provider.icon)
                             .font(.system(size: 13, weight: .medium))
                         Text(provider.rawValue)
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .font(.sanctumMono(11))
+                            .tracking(1)
                     }
-                    .foregroundColor(selectedProvider == provider ? .white : .white.opacity(0.45))
+                    .foregroundColor(selectedProvider == provider ? AppTheme.obsidian : AppTheme.warmWhite.opacity(0.45))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .fill(
                                 selectedProvider == provider
-                                    ? AppTheme.lightPurple.opacity(0.15)
-                                    : Color.clear
+                                    ? AnyShapeStyle(AppTheme.goldGradient)
+                                    : AnyShapeStyle(Color.clear)
                             )
                     )
                 }
@@ -218,21 +220,20 @@ struct ArchiveView: View {
             HStack {
                 Image(systemName: "externaldrive.connected.to.line.below")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(nasMock.isConnected ? .green : .white.opacity(0.6))
+                    .foregroundColor(nasMock.isConnected ? AppTheme.gold : AppTheme.warmWhite.opacity(0.5))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Synology NAS")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppTheme.warmWhite)
                     Text(nasMock.isConnected ? "연결됨 · \(nasMock.nasAddress)" : "연결되지 않음")
-                        .font(.system(size: 12))
-                        .foregroundColor(nasMock.isConnected ? .green.opacity(0.9) : .white.opacity(0.4))
+                        .font(.sanctumMono(10))
+                        .foregroundColor(nasMock.isConnected ? AppTheme.gold.opacity(0.8) : AppTheme.warmWhite.opacity(0.38))
                 }
                 Spacer()
-                // 상태 점
                 Circle()
-                    .fill(nasMock.isConnected ? Color.green : Color.gray.opacity(0.4))
+                    .fill(nasMock.isConnected ? AppTheme.gold : Color.gray.opacity(0.4))
                     .frame(width: 9, height: 9)
-                    .shadow(color: nasMock.isConnected ? .green.opacity(0.6) : .clear, radius: 4)
+                    .shadow(color: nasMock.isConnected ? AppTheme.goldenShadow(opacity: 0.6) : .clear, radius: 4)
             }
 
             // NAS 주소 입력 (비연결 상태일 때)
@@ -255,7 +256,7 @@ struct ArchiveView: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(AppTheme.gracefulGold.opacity(0.15), lineWidth: 0.5)
+                        .stroke(AppTheme.gold.opacity(0.22), lineWidth: 0.8)
                 )
             }
 
@@ -286,24 +287,15 @@ struct ArchiveView: View {
                         Text("NAS 폴더 열기")
                             .font(.system(size: 15, weight: .semibold))
                     }
-                    .foregroundColor(.white)
+                    .foregroundColor(AppTheme.warmWhite)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 13)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(AppTheme.lightPurple.opacity(0.08))
-                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    )
+                    .background(AppTheme.gold.opacity(0.06))
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [AppTheme.gracefulGold.opacity(0.3), AppTheme.lightPurple.opacity(0.2)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1.0
-                            )
+                            .stroke(AppTheme.gold.opacity(0.28), lineWidth: 0.8)
                     )
                 }
             }
@@ -325,34 +317,25 @@ struct ArchiveView: View {
                         ProgressView().tint(.white).scaleEffect(0.8)
                     }
                     Text(isConnecting ? "연결 중..." : (nasMock.isConnected ? "연결 해제" : "NAS 연결"))
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.sanctumMono(11))
+                        .tracking(2)
                 }
-                .foregroundColor(nasMock.isConnected ? .red.opacity(0.9) : .white)
+                .foregroundColor(nasMock.isConnected ? .red.opacity(0.9) : AppTheme.obsidian)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
                 .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(
-                            nasMock.isConnected
-                                ? Color.red.opacity(0.15)
-                                : AppTheme.lightPurple.opacity(0.08)
-                        )
-                        .background(
-                            .ultraThinMaterial,
-                            in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        )
+                    nasMock.isConnected
+                        ? AnyShapeStyle(Color.red.opacity(0.15))
+                        : AnyShapeStyle(AppTheme.goldGradient)
                 )
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .stroke(
-                            nasMock.isConnected 
-                                ? LinearGradient(colors: [Color.red.opacity(0.3)], startPoint: .leading, endPoint: .trailing)
-                                : LinearGradient(
-                                    colors: [AppTheme.gracefulGold.opacity(0.3), AppTheme.lightPurple.opacity(0.2)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                            lineWidth: 1.0
+                            nasMock.isConnected
+                                ? Color.red.opacity(0.3)
+                                : Color.clear,
+                            lineWidth: 0.8
                         )
                 )
             }
@@ -367,13 +350,13 @@ struct ArchiveView: View {
             HStack {
                 Image(systemName: "arrow.up.to.line.compact")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.blue.opacity(0.9))
+                    .foregroundColor(AppTheme.gold.opacity(0.8))
                 Text("NAS 업로드 시연")
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(AppTheme.warmWhite)
                 Spacer()
                 if nasMock.isUploading {
-                    ProgressView().tint(.blue).scaleEffect(0.75)
+                    ProgressView().tint(AppTheme.gold).scaleEffect(0.75)
                 }
             }
 
@@ -389,13 +372,14 @@ struct ArchiveView: View {
                     Task { await nasMock.enqueueAndUpload(assets: assets) }
                 } label: {
                     Label("최근 5장 업로드", systemImage: "photo.stack")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.white)
+                        .font(.sanctumMono(11))
+                        .tracking(1)
+                        .foregroundColor(AppTheme.obsidian)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(
                             RoundedRectangle(cornerRadius: 11, style: .continuous)
-                                .fill(AppTheme.purpleGradient)
+                                .fill(AppTheme.goldGradient)
                         )
                 }
                 .disabled(nasMock.isUploading || photoManager.allPhotos.isEmpty)
@@ -430,13 +414,14 @@ struct ArchiveView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("업로드 현황")
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.8))
+                    .font(.sanctumMono(10))
+                    .tracking(2)
+                    .foregroundColor(AppTheme.gold.opacity(0.6))
                 Spacer()
                 let doneCount = nasMock.uploadQueue.filter { $0.status == .done }.count
                 Text("\(doneCount) / \(nasMock.uploadQueue.count) 완료")
-                    .font(.system(size: 12))
-                    .foregroundColor(.white.opacity(0.45))
+                    .font(.sanctumMono(10))
+                    .foregroundColor(AppTheme.warmWhite.opacity(0.45))
             }
 
             ForEach(nasMock.uploadQueue) { item in
@@ -503,23 +488,23 @@ struct ArchiveView: View {
             HStack {
                 Image(systemName: "g.circle.fill")
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(googleDrive.isLinked ? .green : .white.opacity(0.55))
+                    .foregroundColor(googleDrive.isLinked ? AppTheme.gold : AppTheme.warmWhite.opacity(0.5))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Google Drive")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppTheme.warmWhite)
                     Text(googleDrive.isLinked ? "계정 연결됨" : (googleDrive.isLinking ? "연결 중..." : "연결되지 않음"))
-                        .font(.system(size: 12))
-                        .foregroundColor(googleDrive.isLinked ? .green.opacity(0.9) : .white.opacity(0.4))
+                        .font(.sanctumMono(10))
+                        .foregroundColor(googleDrive.isLinked ? AppTheme.gold.opacity(0.8) : AppTheme.warmWhite.opacity(0.38))
                 }
                 Spacer()
                 if googleDrive.isLinking {
-                    ProgressView().tint(.white.opacity(0.6)).scaleEffect(0.75)
+                    ProgressView().tint(AppTheme.gold.opacity(0.6)).scaleEffect(0.75)
                 } else {
                     Circle()
-                        .fill(googleDrive.isLinked ? Color.green : Color.gray.opacity(0.4))
+                        .fill(googleDrive.isLinked ? AppTheme.gold : Color.gray.opacity(0.4))
                         .frame(width: 9, height: 9)
-                        .shadow(color: googleDrive.isLinked ? .green.opacity(0.6) : .clear, radius: 4)
+                        .shadow(color: googleDrive.isLinked ? AppTheme.goldenShadow(opacity: 0.6) : .clear, radius: 4)
                 }
             }
 
@@ -527,10 +512,10 @@ struct ArchiveView: View {
                 HStack(spacing: 5) {
                     Image(systemName: "arrow.triangle.2.circlepath")
                         .font(.system(size: 11))
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(AppTheme.warmWhite.opacity(0.4))
                     Text("마지막 동기화: \(lastSync, style: .relative) 전")
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.4))
+                        .font(.sanctumMono(10))
+                        .foregroundColor(AppTheme.warmWhite.opacity(0.38))
                 }
             }
 
@@ -545,26 +530,18 @@ struct ArchiveView: View {
                         Image(systemName: "arrow.up.forward.square")
                             .font(.system(size: 14, weight: .semibold))
                         Text("Google Drive 열기")
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.sanctumMono(11))
+                            .tracking(1)
                     }
-                    .foregroundColor(.white)
+                    .foregroundColor(AppTheme.warmWhite)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 13)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(AppTheme.lightPurple.opacity(0.08))
-                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    )
+                    .background(AppTheme.gold.opacity(0.06))
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [AppTheme.gracefulGold.opacity(0.3), AppTheme.lightPurple.opacity(0.2)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1.0
-                            )
+                            .stroke(AppTheme.gold.opacity(0.28), lineWidth: 0.8)
                     )
                 }
             }
@@ -578,23 +555,28 @@ struct ArchiveView: View {
             } label: {
                 HStack(spacing: 6) {
                     if googleDrive.isLinking {
-                        ProgressView().tint(.white).scaleEffect(0.75)
+                        ProgressView().tint(AppTheme.obsidian).scaleEffect(0.75)
                     } else {
                         Image(systemName: googleDrive.isLinked ? "link.badge.minus" : "link")
                             .font(.system(size: 14, weight: .semibold))
                     }
                     Text(googleDrive.isLinking ? "Google 로그인 중..." :
                          (googleDrive.isLinked ? "연결 해제" : "Google 계정 연결"))
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.sanctumMono(11))
+                        .tracking(2)
                 }
-                .foregroundColor(googleDrive.isLinked ? .red.opacity(0.9) : .white)
+                .foregroundColor(googleDrive.isLinked ? .red.opacity(0.9) : AppTheme.obsidian)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
-                .background(googleDrive.isLinked ? Color.red.opacity(0.15) : Color.blue.opacity(0.2))
+                .background(
+                    googleDrive.isLinked
+                        ? AnyShapeStyle(Color.red.opacity(0.15))
+                        : AnyShapeStyle(AppTheme.goldGradient)
+                )
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(googleDrive.isLinked ? Color.red.opacity(0.3) : Color.blue.opacity(0.4), lineWidth: 0.5)
+                        .stroke(googleDrive.isLinked ? Color.red.opacity(0.3) : Color.clear, lineWidth: 0.8)
                 )
             }
             .disabled(googleDrive.isLinking)
@@ -607,8 +589,9 @@ struct ArchiveView: View {
     private var uploadModeSelector: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("업로드 방식 선택")
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                .foregroundColor(.white.opacity(0.8))
+                .font(.sanctumMono(10))
+                .tracking(2)
+                .foregroundColor(AppTheme.gold.opacity(0.6))
                 .padding(.horizontal, 4)
             
             VStack(spacing: 10) {
@@ -667,24 +650,25 @@ struct ArchiveView: View {
                     .foregroundColor(isSelected ? theme.gradient : .white.opacity(0.5))
                 VStack(spacing: 2) {
                     Text(title)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(isSelected ? .white : .white.opacity(0.6))
+                        .font(.sanctumMono(10))
+                        .tracking(1)
+                        .foregroundColor(isSelected ? AppTheme.obsidian : AppTheme.warmWhite.opacity(0.6))
                     Text(subtitle)
                         .font(.system(size: 10))
-                        .foregroundColor(isSelected ? theme.accentColor.opacity(0.8) : .white.opacity(0.4))
+                        .foregroundColor(isSelected ? AppTheme.obsidian.opacity(0.7) : AppTheme.warmWhite.opacity(0.38))
                 }
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(
                 isSelected
-                    ? theme.accentColor.opacity(0.15)
-                    : Color.white.opacity(0.05)
+                    ? AnyShapeStyle(AppTheme.goldGradient)
+                    : AnyShapeStyle(AppTheme.warmWhite.opacity(0.04))
             )
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(isSelected ? theme.gradient : Color.white.opacity(0.1), lineWidth: 1)
+                    .stroke(isSelected ? Color.clear : AppTheme.gold.opacity(0.18), lineWidth: 0.8)
             )
         }
     }
@@ -748,16 +732,17 @@ struct ArchiveView: View {
                     Image(systemName: "photo.on.rectangle.angled")
                         .font(.system(size: 14, weight: .semibold))
                     Text("앨범 선택하기")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.sanctumMono(11))
+                        .tracking(2)
                 }
-                .foregroundColor(.white)
+                .foregroundColor(AppTheme.obsidian)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(theme.gradient)
+                        .fill(AppTheme.goldGradient)
                 )
-                .shadow(color: theme.glowColor, radius: 8, x: 0, y: 4)
+                .shadow(color: AppTheme.goldenShadow(opacity: 0.3), radius: 8, x: 0, y: 4)
             }
         }
     }
@@ -802,16 +787,17 @@ struct ArchiveView: View {
                     Image(systemName: "photo.stack")
                         .font(.system(size: 14, weight: .semibold))
                     Text("사진 선택하기")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.sanctumMono(11))
+                        .tracking(2)
                 }
-                .foregroundColor(.white)
+                .foregroundColor(AppTheme.obsidian)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(AppTheme.gracefulGold)
+                        .fill(AppTheme.goldGradient)
                 )
-                .shadow(color: AppTheme.gracefulGold.opacity(0.4), radius: 8, x: 0, y: 4)
+                .shadow(color: AppTheme.goldenShadow(opacity: 0.3), radius: 8, x: 0, y: 4)
             }
         }
     }
@@ -856,16 +842,17 @@ struct ArchiveView: View {
                     Image(systemName: "video.fill")
                         .font(.system(size: 14, weight: .semibold))
                     Text("영상 선택하기")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.sanctumMono(11))
+                        .tracking(2)
                 }
-                .foregroundColor(.white)
+                .foregroundColor(AppTheme.obsidian)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(AppTheme.gracefulGold)
+                        .fill(AppTheme.goldGradient)
                 )
-                .shadow(color: AppTheme.gracefulGold.opacity(0.4), radius: 8, x: 0, y: 4)
+                .shadow(color: AppTheme.goldenShadow(opacity: 0.3), radius: 8, x: 0, y: 4)
             }
         }
     }
@@ -910,16 +897,17 @@ struct ArchiveView: View {
                     Image(systemName: "doc.fill")
                         .font(.system(size: 14, weight: .semibold))
                     Text("문서 선택하기")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.sanctumMono(11))
+                        .tracking(2)
                 }
-                .foregroundColor(.white)
+                .foregroundColor(AppTheme.obsidian)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(AppTheme.gracefulGold)
+                        .fill(AppTheme.goldGradient)
                 )
-                .shadow(color: AppTheme.gracefulGold.opacity(0.4), radius: 8, x: 0, y: 4)
+                .shadow(color: AppTheme.goldenShadow(opacity: 0.3), radius: 8, x: 0, y: 4)
             }
         }
     }
@@ -958,14 +946,14 @@ struct ArchiveView: View {
     private func guideStep(num: String, text: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text(num)
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                .foregroundColor(.blue.opacity(0.8))
+                .font(.sanctumMono(10))
+                .foregroundColor(AppTheme.obsidian)
                 .frame(width: 16, height: 16)
-                .background(Color.blue.opacity(0.15))
+                .background(AppTheme.gold.opacity(0.85))
                 .clipShape(Circle())
             Text(text)
                 .font(.system(size: 12))
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(AppTheme.warmWhite.opacity(0.6))
                 .lineLimit(2)
         }
     }
@@ -1085,7 +1073,7 @@ struct NASUploadRow: View {
     var statusColor: Color {
         switch item.status {
         case .waiting:   return .white.opacity(0.3)
-        case .uploading: return .blue
+        case .uploading: return AppTheme.gold
         case .done:      return .green
         case .failed:    return .red
         }
@@ -1123,7 +1111,7 @@ struct NASUploadRow: View {
                 if item.status == .uploading {
                     Text("\(Int(item.progress * 100))%")
                         .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                        .foregroundColor(.blue.opacity(0.8))
+                        .foregroundColor(AppTheme.gold.opacity(0.8))
                 } else if item.status == .done {
                     Text("완료")
                         .font(.system(size: 12, weight: .semibold))
@@ -1139,7 +1127,7 @@ struct NASUploadRow: View {
                             .fill(Color.white.opacity(0.08))
                             .frame(height: 3)
                         RoundedRectangle(cornerRadius: 3)
-                            .fill(item.status == .done ? Color.green : Color.blue)
+                            .fill(item.status == .done ? Color.green : AppTheme.gold)
                             .frame(width: geo.size.width * item.progress, height: 3)
                             .animation(.easeInOut(duration: 0.15), value: item.progress)
                     }

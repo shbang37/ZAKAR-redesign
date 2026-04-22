@@ -9,61 +9,16 @@ struct AlbumsView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                PremiumBackground(style: .cool)
-                
+                PremiumBackground(style: .warm)
+
                 ScrollView {
-                    VStack(spacing: 18) {
-                        // 내 앨범 섹션
+                    VStack(spacing: 24) {
                         if !albums.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("내 앨범")
-                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.6))
-                                    .padding(.horizontal, 20)
-                                    .padding(.top, 8)
-                                
-                                VStack(spacing: 10) {
-                                    ForEach(albums, id: \.localIdentifier) { collection in
-                                        NavigationLink(destination: AlbumDetailView(collection: collection)) {
-                                            albumCard(
-                                                icon: "folder.fill",
-                                                title: collection.localizedTitle ?? "앨범",
-                                                gradient: AppTheme.gracefulGold,
-                                                count: getAssetCount(for: collection)
-                                            )
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                            }
+                            albumSection(title: "내 앨범", collections: albums, icon: "folder.fill")
                         }
-                        
-                        // 스마트 앨범 섹션
                         if !smartAlbums.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("스마트 앨범")
-                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.6))
-                                    .padding(.horizontal, 20)
-                                
-                                VStack(spacing: 10) {
-                                    ForEach(smartAlbums, id: \.localIdentifier) { collection in
-                                        NavigationLink(destination: AlbumDetailView(collection: collection)) {
-                                            albumCard(
-                                                icon: "folder",
-                                                title: collection.localizedTitle ?? "앨범",
-                                                gradient: AppTheme.lightPurple,
-                                                count: getAssetCount(for: collection)
-                                            )
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                            }
+                            albumSection(title: "스마트 앨범", collections: smartAlbums, icon: "folder")
                         }
-                        
                         Spacer(minLength: 20)
                     }
                     .padding(.vertical, 16)
@@ -72,48 +27,88 @@ struct AlbumsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text("앨범")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
+                    Text("ALBUMS")
+                        .font(.sanctumMono(12))
+                        .tracking(3)
+                        .foregroundColor(AppTheme.warmWhite)
                 }
             }
         }
         .onAppear { requestAndFetch() }
     }
-    
-    private func albumCard(icon: String, title: String, gradient: Color, count: Int) -> some View {
-        HStack(spacing: 14) {
-            Image(systemName: icon)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(gradient)
-                .frame(width: 36, height: 36)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(gradient.opacity(0.3), lineWidth: 1))
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white)
-                Text("\(count)개 항목")
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.5))
+
+    private func albumSection(title: String, collections: [PHAssetCollection], icon: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(title.uppercased())
+                    .font(.sanctumMono(10))
+                    .tracking(2)
+                    .foregroundColor(AppTheme.gold.opacity(0.6))
+                Spacer()
+                Text("\(collections.count)")
+                    .font(.sanctumMono(10))
+                    .foregroundColor(AppTheme.gold.opacity(0.4))
             }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(.white.opacity(0.35))
+            .padding(.horizontal, 20)
+            .padding(.top, 4)
+
+            VStack(spacing: 8) {
+                ForEach(collections, id: \.localIdentifier) { collection in
+                    NavigationLink(destination: AlbumDetailView(collection: collection)) {
+                        albumCard(
+                            icon: icon,
+                            title: collection.localizedTitle ?? "앨범",
+                            count: getAssetCount(for: collection)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
         }
-        .padding(16)
-        .background(GlassCard(cornerRadius: 16))
+    }
+
+    private func albumCard(icon: String, title: String, count: Int) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(AppTheme.gold.opacity(0.08))
+                    .frame(width: 36, height: 36)
+                    .background(
+                        .ultraThinMaterial,
+                        in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(AppTheme.gold.opacity(0.28), lineWidth: 0.8)
+                    )
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(AppTheme.gold.opacity(0.75))
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(AppTheme.warmWhite)
+                Text("\(count)개 항목")
+                    .font(.sanctumMono(10))
+                    .foregroundColor(AppTheme.warmWhite.opacity(0.38))
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(AppTheme.gold.opacity(0.35))
+        }
+        .padding(14)
+        .background(GlassCard(cornerRadius: 14, style: .subtle))
         .contentShape(Rectangle())
     }
-    
+
     private func getAssetCount(for collection: PHAssetCollection) -> Int {
-        let options = PHFetchOptions()
-        let fetch = PHAsset.fetchAssets(in: collection, options: options)
-        return fetch.count
+        PHAsset.fetchAssets(in: collection, options: nil).count
     }
 
     private func requestAndFetch() {
@@ -136,7 +131,7 @@ struct AlbumsView: View {
         let smartFetch = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
         smartFetch.enumerateObjects { collection, _, _ in
             switch collection.assetCollectionSubtype {
-            case .smartAlbumUserLibrary, // Recents
+            case .smartAlbumUserLibrary,
                  .smartAlbumFavorites,
                  .smartAlbumVideos,
                  .smartAlbumLivePhotos:
@@ -161,13 +156,17 @@ struct AlbumDetailView: View {
 
     var body: some View {
         ZStack {
-            PremiumBackground(style: .cool)
-            
+            PremiumBackground(style: .warm)
+
             ScrollView {
                 LazyVGrid(columns: grid, spacing: 2) {
                     ForEach(assets.indices, id: \.self) { index in
                         AssetThumbnail(asset: assets[index], size: 120)
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .stroke(AppTheme.gold.opacity(0.12), lineWidth: 0.5)
+                            )
                             .onTapGesture {
                                 selectedPhotoIndex = index
                                 isCleanModeActive = true
@@ -201,4 +200,3 @@ struct AlbumDetailView: View {
 }
 
 #Preview { AlbumsView() }
-

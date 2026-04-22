@@ -16,22 +16,12 @@ struct ProfileView: View {
                     .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 20) {
-                        // 프로필 카드
+                    VStack(spacing: 16) {
                         profileCard
-
-                        // 구글 드라이브 연결 카드
                         driveConnectionCard
-
-                        // 역할 안내
                         roleInfoCard
-
                         Spacer(minLength: 20)
-
-                        // 로그아웃 버튼
                         signOutButton
-                        
-                        // 계정 삭제 버튼
                         deleteAccountButton
                     }
                     .padding(.horizontal, 20)
@@ -41,9 +31,10 @@ struct ProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text("내 정보")
-                        .font(.system(size: 17, weight: .bold))
-                        .foregroundColor(.white)
+                    Text("MY")
+                        .font(.sanctumMono(12))
+                        .tracking(3)
+                        .foregroundColor(AppTheme.warmWhite)
                 }
             }
         }
@@ -56,9 +47,7 @@ struct ProfileView: View {
         .alert("계정 삭제", isPresented: $showDeleteAccountAlert) {
             Button("취소", role: .cancel) {}
             Button("삭제", role: .destructive) {
-                Task {
-                    await deleteAccount()
-                }
+                Task { await deleteAccount() }
             }
         } message: {
             Text("계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.\n이 작업은 취소할 수 없습니다.\n\n정말 삭제하시겠습니까?")
@@ -68,31 +57,29 @@ struct ProfileView: View {
     // MARK: - 프로필 카드
     private var profileCard: some View {
         VStack(spacing: 16) {
-            // 아바타
             ZStack {
                 Circle()
-                    .fill(AppTheme.dualGradient)
+                    .fill(AppTheme.obsidian.opacity(0.7))
                     .frame(width: 72, height: 72)
                     .overlay(
                         Circle()
-                            .stroke(AppTheme.gracefulGold.opacity(0.4), lineWidth: 2)
+                            .stroke(AppTheme.gold.opacity(0.55), lineWidth: 1.5)
                     )
-                    .shadow(color: AppTheme.gracefulGold.opacity(0.3), radius: 15)
+                    .shadow(color: AppTheme.goldenShadow(opacity: 0.25), radius: 14)
                 Text(auth.currentUser?.name.prefix(1).uppercased() ?? "?")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.displayMedium(26))
+                    .foregroundColor(AppTheme.warmWhite)
             }
 
-            VStack(spacing: 6) {
+            VStack(spacing: 5) {
                 Text(auth.currentUser?.name ?? "사용자")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(AppTheme.warmWhite)
                 Text(auth.currentUser?.department ?? "")
-                    .font(.system(size: 13))
-                    .foregroundColor(.white.opacity(0.5))
+                    .font(.sanctumMono(11))
+                    .foregroundColor(AppTheme.warmWhite.opacity(0.45))
             }
 
-            // 역할 및 상태 배지
             if let user = auth.currentUser {
                 HStack(spacing: 8) {
                     roleBadge(user.role)
@@ -106,27 +93,28 @@ struct ProfileView: View {
     }
 
     private func roleBadge(_ role: UserRecord.UserRole) -> some View {
-        let color: Color = role == .admin ? AppTheme.lightPurple : (role == .reporter ? AppTheme.gracefulGold : AppTheme.gracefulGold)
-        return Text(role.displayName)
-            .font(.system(size: 12, weight: .bold))
-            .foregroundColor(color)
+        Text(role.displayName)
+            .font(.sanctumMono(10))
+            .tracking(1)
+            .foregroundColor(AppTheme.gold)
             .padding(.horizontal, 12)
             .padding(.vertical, 5)
-            .background(color.opacity(0.15))
+            .background(AppTheme.gold.opacity(0.12))
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(color.opacity(0.3), lineWidth: 0.5))
+            .overlay(Capsule().stroke(AppTheme.gold.opacity(0.35), lineWidth: 0.8))
     }
 
     private func statusBadge(_ status: UserRecord.UserStatus) -> some View {
         let color: Color = status == .approved ? .green : (status == .pending ? .orange : .red)
         return Text(status.displayName)
-            .font(.system(size: 12, weight: .bold))
+            .font(.sanctumMono(10))
+            .tracking(1)
             .foregroundColor(color)
             .padding(.horizontal, 12)
             .padding(.vertical, 5)
-            .background(color.opacity(0.15))
+            .background(color.opacity(0.12))
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(color.opacity(0.3), lineWidth: 0.5))
+            .overlay(Capsule().stroke(color.opacity(0.35), lineWidth: 0.8))
     }
 
     // MARK: - 구글 드라이브 연결 카드
@@ -134,81 +122,81 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Image(systemName: "cloud.fill")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(AppTheme.purpleGradient)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(AppTheme.gold.opacity(0.6))
                 Text("구글 드라이브 연동")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.white)
+                    .font(.sanctumMono(11))
+                    .tracking(1)
+                    .foregroundColor(AppTheme.warmWhite)
                 Spacer()
                 if drive.isLinked {
                     Circle()
-                        .fill(AppTheme.gracefulGold)
-                        .frame(width: 8, height: 8)
-                        .shadow(color: AppTheme.gracefulGold.opacity(0.5), radius: 4)
+                        .fill(AppTheme.gold)
+                        .frame(width: 7, height: 7)
+                        .shadow(color: AppTheme.goldenShadow(opacity: 0.5), radius: 4)
                 }
             }
 
             if drive.isLinked {
-                // 연결됨 상태
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 13))
-                            .foregroundColor(AppTheme.gracefulGold)
+                            .foregroundColor(AppTheme.gold)
                         Text("연결됨")
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(AppTheme.warmWhite.opacity(0.8))
                     }
                     if let email = drive.linkedEmail {
                         Text(email)
-                            .font(.system(size: 12))
-                            .foregroundColor(.white.opacity(0.5))
+                            .font(.sanctumMono(10))
+                            .foregroundColor(AppTheme.warmWhite.opacity(0.45))
                     }
                     Button {
                         drive.unlink()
                     } label: {
                         Text("연결 해제")
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.sanctumMono(10))
+                            .tracking(1)
                             .foregroundColor(.red.opacity(0.8))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(Color.red.opacity(0.1))
                             .clipShape(Capsule())
+                            .overlay(Capsule().stroke(Color.red.opacity(0.25), lineWidth: 0.5))
                     }
                     .padding(.top, 4)
                 }
             } else {
-                // 미연결 상태
                 VStack(alignment: .leading, spacing: 8) {
                     Text("구글 드라이브에 연결하여\n사진을 자동으로 백업하세요.")
                         .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(AppTheme.warmWhite.opacity(0.45))
                         .lineSpacing(3)
-                    
+
                     Button {
                         Task {
                             await drive.link()
-                            if drive.linkError != nil {
-                                showDriveError = true
-                            }
+                            if drive.linkError != nil { showDriveError = true }
                         }
                     } label: {
                         HStack(spacing: 6) {
                             if drive.isLinking {
                                 ProgressView()
                                     .scaleEffect(0.8)
-                                    .tint(.white)
+                                    .tint(AppTheme.obsidian)
                             } else {
                                 Image(systemName: "link")
                                     .font(.system(size: 13, weight: .semibold))
                                 Text("지금 연결하기")
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.sanctumMono(11))
+                                    .tracking(1)
                             }
                         }
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.obsidian)
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(AppTheme.purpleGradient)
+                        .padding(.vertical, 9)
+                        .background(AppTheme.goldGradient)
                         .clipShape(Capsule())
                     }
                     .disabled(drive.isLinking)
@@ -228,9 +216,15 @@ struct ProfileView: View {
     // MARK: - 역할 안내 카드
     private var roleInfoCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("역할 안내", systemImage: "info.circle")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(AppTheme.dualGradient)
+            HStack(spacing: 6) {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(AppTheme.gold.opacity(0.6))
+                Text("역할 안내")
+                    .font(.sanctumMono(10))
+                    .tracking(2)
+                    .foregroundColor(AppTheme.gold.opacity(0.6))
+            }
 
             VStack(spacing: 8) {
                 roleRow(icon: "person.fill", role: "동역자",
@@ -249,15 +243,15 @@ struct ProfileView: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(AppTheme.gold.opacity(0.45))
                 .frame(width: 20)
             VStack(alignment: .leading, spacing: 1) {
                 Text(role)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(AppTheme.warmWhite.opacity(0.8))
                 Text(desc)
                     .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(AppTheme.warmWhite.opacity(0.38))
             }
         }
     }
@@ -269,21 +263,24 @@ struct ProfileView: View {
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: "rectangle.portrait.and.arrow.right")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                 Text("로그아웃")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.sanctumMono(11))
+                    .tracking(2)
             }
-            .foregroundColor(.red.opacity(0.85))
+            .foregroundColor(AppTheme.gold)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(Color.red.opacity(0.1))
+            .background(AppTheme.gold.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.red.opacity(0.25), lineWidth: 0.5))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(AppTheme.gold.opacity(0.28), lineWidth: 0.8)
+            )
         }
         .padding(.bottom, 8)
     }
-    
+
     // MARK: - 계정 삭제 버튼
     private var deleteAccountButton: some View {
         Button {
@@ -292,22 +289,25 @@ struct ProfileView: View {
             HStack(spacing: 8) {
                 if isDeleting {
                     ProgressView()
-                        .tint(.white)
+                        .tint(AppTheme.warmWhite.opacity(0.5))
                         .scaleEffect(0.9)
                 } else {
                     Image(systemName: "trash")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                 }
                 Text(isDeleting ? "삭제 중..." : "계정 삭제")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.sanctumMono(10))
+                    .tracking(1)
             }
-            .foregroundColor(.white.opacity(0.6))
+            .foregroundColor(AppTheme.warmWhite.opacity(0.45))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(Color.white.opacity(0.05))
+            .background(AppTheme.warmWhite.opacity(0.04))
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.white.opacity(0.1), lineWidth: 0.5))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(AppTheme.warmWhite.opacity(0.08), lineWidth: 0.5)
+            )
         }
         .disabled(isDeleting)
     }
@@ -318,18 +318,10 @@ struct ProfileView: View {
         defer { isDeleting = false }
 
         do {
-            // 1. LocalDB 초기화
             LocalDB.clearAll()
-
-            // 2. Google Drive 연결 해제
             drive.unlink()
-
-            // 3. Firebase 계정 삭제 (Firestore + Authentication)
             try await auth.deleteAccount()
-
-            // 성공 시 자동으로 로그인 화면으로 이동 (authState가 .unauthenticated로 변경됨)
         } catch {
-            // 오류 처리
             auth.errorMessage = "계정 삭제 실패: \(error.localizedDescription)"
         }
     }
