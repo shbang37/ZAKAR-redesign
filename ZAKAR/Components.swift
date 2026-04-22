@@ -471,3 +471,176 @@ struct GoldDivider: View {
         }
     }
 }
+
+// MARK: - 7. Sanctum CTA Button (goldGradient 전신 버튼)
+struct SanctumCTAButton: View {
+    let label: String
+    var icon: String? = nil
+    var isLoading: Bool = false
+    var isEnabled: Bool = true
+    let action: () -> Void
+
+    var body: some View {
+        Button { action() } label: {
+            ZStack {
+                if isLoading {
+                    ProgressView()
+                        .tint(AppTheme.obsidian)
+                        .scaleEffect(0.85)
+                } else {
+                    HStack(spacing: 8) {
+                        if let icon {
+                            Image(systemName: icon)
+                                .font(.system(size: 15, weight: .semibold))
+                        }
+                        Text(label)
+                            .font(.sanctumMono(12))
+                            .tracking(4)
+                    }
+                    .foregroundColor(isEnabled ? AppTheme.obsidian : AppTheme.warmWhite.opacity(0.4))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .background(
+                isEnabled
+                    ? AnyShapeStyle(AppTheme.goldGradient)
+                    : AnyShapeStyle(AppTheme.gold.opacity(0.22)),
+                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+            )
+            .shadow(
+                color: isEnabled ? AppTheme.goldenShadow(opacity: 0.25) : .clear,
+                radius: 10, x: 0, y: 4
+            )
+        }
+        .disabled(!isEnabled || isLoading)
+    }
+}
+
+// MARK: - 8. Sanctum Outline Button (hairlineGold 투명 버튼)
+struct SanctumOutlineButton: View {
+    let label: String
+    var icon: String? = nil
+    var height: CGFloat = 48
+    let action: () -> Void
+
+    var body: some View {
+        Button { action() } label: {
+            HStack(spacing: 8) {
+                if let icon {
+                    Image(systemName: icon)
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                Text(label)
+                    .font(.sanctumMono(11))
+                    .tracking(3)
+            }
+            .foregroundColor(AppTheme.warmWhite.opacity(0.65))
+            .frame(maxWidth: .infinity)
+            .frame(height: height)
+            .background(AppTheme.warmWhite.opacity(0.04))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(AppTheme.gold.opacity(0.28), lineWidth: 0.8)
+            )
+        }
+    }
+}
+
+// MARK: - 9. Sanctum Badge (sanctumMono + hairlineGold 박스)
+struct SanctumBadge: View {
+    let text: String
+    var style: BadgeStyle = .gold
+
+    enum BadgeStyle {
+        case gold    // gold text + gold border
+        case subtle  // warmWhite muted text + subtle border
+        case active  // obsidian text + goldGradient fill
+    }
+
+    var body: some View {
+        Text(text.uppercased())
+            .font(.sanctumMono(9))
+            .tracking(2)
+            .foregroundColor(labelColor)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(bgView)
+            .clipShape(Capsule())
+            .overlay(Capsule().stroke(borderColor, lineWidth: 0.8))
+    }
+
+    @ViewBuilder
+    private var bgView: some View {
+        switch style {
+        case .gold:   Capsule().fill(AppTheme.gold.opacity(0.12))
+        case .subtle: Capsule().fill(AppTheme.warmWhite.opacity(0.06))
+        case .active: Capsule().fill(AppTheme.goldGradient)
+        }
+    }
+
+    private var labelColor: Color {
+        switch style {
+        case .gold:   return AppTheme.gold
+        case .subtle: return AppTheme.warmWhite.opacity(0.5)
+        case .active: return AppTheme.obsidian
+        }
+    }
+
+    private var borderColor: Color {
+        switch style {
+        case .gold:   return AppTheme.gold.opacity(0.35)
+        case .subtle: return AppTheme.warmWhite.opacity(0.1)
+        case .active: return .clear
+        }
+    }
+}
+
+// MARK: - 10. Gold Pulse FX (동심원 맥박 이펙트 — 재사용 가능)
+struct GoldPulseFX: View {
+    var outerSize: CGFloat = 160
+    @State private var scale: CGFloat = 1.0
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(AppTheme.gold.opacity(0.06), lineWidth: 1)
+                .frame(width: outerSize, height: outerSize)
+                .scaleEffect(scale)
+                .opacity(2.0 - scale)
+
+            Circle()
+                .stroke(AppTheme.gold.opacity(0.12), lineWidth: 1)
+                .frame(width: outerSize * 0.76, height: outerSize * 0.76)
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: false)) {
+                scale = 1.5
+            }
+        }
+    }
+}
+
+// MARK: - 11. Animation 표준값
+extension Animation {
+    /// 화면 전환 기본 애니메이션
+    static let sanctumTransition = Animation.easeOut(duration: 0.35)
+    /// 카드 등장 애니메이션
+    static let sanctumCard = Animation.easeOut(duration: 0.4)
+    /// 스프링 인터랙션 기본값
+    static let sanctumSpring = Animation.spring(response: 0.28, dampingFraction: 0.7)
+    /// 빠른 피드백 스프링
+    static let sanctumFeedback = Animation.spring(response: 0.22, dampingFraction: 0.65)
+}
+
+// MARK: - 12. View 수식어 — 카드 등장 애니메이션
+extension View {
+    /// opacity + Y offset 등장 (카드/섹션 공통)
+    func sanctumAppear(_ isVisible: Bool, delay: Double = 0) -> some View {
+        self
+            .opacity(isVisible ? 1 : 0)
+            .offset(y: isVisible ? 0 : 20)
+            .animation(.sanctumCard.delay(delay), value: isVisible)
+    }
+}
