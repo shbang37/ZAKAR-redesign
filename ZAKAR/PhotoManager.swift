@@ -98,6 +98,8 @@ class PhotoManager: ObservableObject {
     
     // 동시 fetch 방지 플래그
     private var isFetching = false
+    // 분석 Task 참조 - 중복 실행 방지
+    private var analysisTask: Task<Void, Never>?
     
     // 현재 적용된 필터 추적
     private var currentFilterYear: Int? = nil
@@ -107,6 +109,8 @@ class PhotoManager: ObservableObject {
     /// 필터 변경 시 분석 상태 및 캐시 초기화
     func resetAnalysisState() {
         print("ZAKAR Log: PhotoManager - resetAnalysisState called")
+        analysisTask?.cancel()
+        analysisTask = nil
         Task { @MainActor in
             self.hashCache.removeAll()
             self.didAnalyzeForCurrentList = false
@@ -244,7 +248,8 @@ class PhotoManager: ObservableObject {
         // 분석 시작 전 이전 결과 초기화
         Task { @MainActor in self.groupedPhotos = [] }
 
-        Task(priority: .userInitiated) { [assets = self.allPhotos] in
+        analysisTask?.cancel()
+        analysisTask = Task(priority: .userInitiated) { [assets = self.allPhotos] in
             self.analyzeGroupsProgressive(assets: assets)
             await MainActor.run { self.isAnalyzing = false }
         }

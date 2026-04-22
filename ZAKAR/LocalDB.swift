@@ -88,7 +88,8 @@ final class LocalDB {
     private let fm = FileManager.default
 
     private var baseURL: URL {
-        let url = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        let url = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory())
         let dir = url.appendingPathComponent("ZAKAR", isDirectory: true)
         if !fm.fileExists(atPath: dir.path) {
             try? fm.createDirectory(at: dir, withIntermediateDirectories: true)

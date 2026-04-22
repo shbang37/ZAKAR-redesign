@@ -35,6 +35,9 @@ struct CleanUpView: View {
     @State private var imageCache: [Int: UIImage] = [:]
     // 현재 진행 중인 이미지 요청 ID (중복 요청 취소용)
     @State private var currentRequestID: PHImageRequestID?
+    // Task 참조 - 뷰 해제 시 취소
+    @State private var emptyRetryTask: Task<Void, Never>?
+    @State private var initLoadTask: Task<Void, Never>?
 
     @Environment(\.displayScale) var displayScale
 
@@ -72,9 +75,9 @@ struct CleanUpView: View {
                         .foregroundColor(AppTheme.warmWhite.opacity(0.5))
                 }
                 .onAppear {
-                    // 0.5초 후 자동으로 닫기 (상위 View에서 재시도하도록)
-                    Task {
+                    emptyRetryTask = Task {
                         try? await Task.sleep(nanoseconds: 500_000_000)
+                        guard !Task.isCancelled else { return }
                         print("ZAKAR Log: CleanUpView - photos empty, auto-closing for retry")
                         isPresented = false
                     }
@@ -328,27 +331,34 @@ struct CleanUpView: View {
         }
         .onAppear {
             print("ZAKAR Log: CleanUpView onAppear - currentIndex: \(currentIndex), photos.count: \(photos.count)")
-            
-            // 약간의 지연 후 이미지 로드 (SwiftUI 초기화 대기)
-            Task {
+            initLoadTask = Task {
                 try? await Task.sleep(nanoseconds: 50_000_000)
+                guard !Task.isCancelled else { return }
                 print("ZAKAR Log: Starting initial image load after delay")
                 self.loadImgWithPreview(at: self.currentIndex)
                 self.preloadAdjacent(around: self.currentIndex)
                 self.updateStarStatus()
                 self.fetchUserAlbums()
-                
-                // 타임아웃 체크: 2초 후에도 이미지가 없으면 재시도
+
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
+                guard !Task.isCancelled else { return }
                 if self.currentUIImage == nil {
                     print("ZAKAR Log: Image load timeout! Retrying...")
                     self.loadImgWithPreview(at: self.currentIndex)
                 }
             }
         }
+        .onDisappear {
+            emptyRetryTask?.cancel()
+            initLoadTask?.cancel()
+        }
         .onChange(of: currentIndex) { _, newIndex in
             print("ZAKAR Log: currentIndex changed to \(newIndex)")
-            // 인덱스가 변경될 때도 동일한 로직 적용
+            // 이전 이미지 요청 취소 - 이전 인덱스의 콜백이 현재 UI를 덮어쓰는 것 방지
+            if let reqID = currentRequestID {
+                PHImageManager.default().cancelImageRequest(reqID)
+                currentRequestID = nil
+            }
             if imageCache[newIndex] == nil && currentUIImage == nil {
                 loadImgWithPreview(at: newIndex)
                 preloadAdjacent(around: newIndex)

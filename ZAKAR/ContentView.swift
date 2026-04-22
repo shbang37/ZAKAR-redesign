@@ -22,6 +22,7 @@ struct ContentView: View {
 
     @State private var showTutorialOverlay = false
     @State private var showAutoCleanDialog = false
+    @State private var trashNotificationTask: Task<Void, Never>?
 
     init(initialTab: Int = 0, year: Int? = nil, month: Int? = nil) {
         self._selectedTab = State(initialValue: initialTab)
@@ -399,6 +400,7 @@ struct ContentView: View {
                 photoManager.loadTrash()
             }
             .onDisappear {
+                trashNotificationTask?.cancel()
                 if filterYear != nil || filterMonth != nil {
                     print("ZAKAR Log: ContentView - onDisappear, resetting analysis state for filtered view")
                     photoManager.resetAnalysisState()
@@ -413,6 +415,7 @@ struct ContentView: View {
                         print("ZAKAR Log: Auto-retry detected - photoIndex: \(retry.photoIndex), groupIndex: \(String(describing: retry.groupIndex))")
                         Task {
                             try? await Task.sleep(nanoseconds: 300_000_000)
+                            guard !Task.isCancelled else { return }
                             self.pendingCleanModeRetry = nil
                             self.openCleanMode(at: retry.photoIndex, groupIndex: retry.groupIndex)
                         }
@@ -420,8 +423,10 @@ struct ContentView: View {
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenTrash"))) { _ in
-                Task {
+                trashNotificationTask?.cancel()
+                trashNotificationTask = Task {
                     try? await Task.sleep(nanoseconds: 300_000_000)
+                    guard !Task.isCancelled else { return }
                     self.showTrashView = true
                 }
             }
@@ -544,6 +549,7 @@ struct ContentView: View {
             print("ZAKAR Log: 다음 그룹 사진 개수: \(photoManager.groupedPhotos[nextIndex].count)")
             Task {
                 try? await Task.sleep(nanoseconds: 200_000_000)
+                guard !Task.isCancelled else { return }
                 self.openCleanMode(at: 0, groupIndex: nextIndex)
             }
         } else {

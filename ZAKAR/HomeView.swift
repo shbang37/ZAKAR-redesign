@@ -209,6 +209,7 @@ private struct RecentPhotoCard: View {
     @State private var showCleanUpView = false
     @State private var showTrashView = false
     @State private var isLoading = false
+    @State private var trashNotificationTask: Task<Void, Never>?
 
     var body: some View {
         Button {
@@ -228,7 +229,7 @@ private struct RecentPhotoCard: View {
         .buttonStyle(.plain)
         .onAppear { loadRecentPhoto() }
         .onChange(of: photoManager.allPhotos.count) { _, _ in
-            if thumbnail == nil { loadRecentPhoto() }
+            loadRecentPhoto()
         }
         .fullScreenCover(isPresented: $showCleanUpView) {
             if let photo = recentPhoto,
@@ -257,10 +258,15 @@ private struct RecentPhotoCard: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenTrash"))) { _ in
-            Task {
+            trashNotificationTask?.cancel()
+            trashNotificationTask = Task {
                 try? await Task.sleep(nanoseconds: 300_000_000)
+                guard !Task.isCancelled else { return }
                 self.showTrashView = true
             }
+        }
+        .onDisappear {
+            trashNotificationTask?.cancel()
         }
     }
 
